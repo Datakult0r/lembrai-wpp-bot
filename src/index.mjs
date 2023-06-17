@@ -2,8 +2,25 @@ import openai from "openai";
 import fetch from "node-fetch";
 import { createBot } from "whatsapp-cloud-api";
 import { isWithinTokenLimit } from "gpt-tokenizer";
+import fs from "fs";
+import path from "path";
 
 openai.api_key = process.env.OPENAI_API_KEY;
+
+function logToFile(filename, message) {
+  const dir = "./logs";
+
+  // If logs directory does not exist, create it
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+
+  fs.appendFile(path.join(dir, filename), message + "\n", function (err) {
+    if (err) {
+      console.error("An error occurred while writing to the file:", err);
+    }
+  });
+}
 
 const conversationHistory = [];
 
@@ -81,10 +98,18 @@ async function getOpenAIResponse(userMessage) {
           const messageRecieved = msg.data.text;
           console.log("User message: ", messageRecieved);
 
+          // Log user's message to a file
+          const dateStr = new Date().toISOString().split("T")[0]; // get current date in YYYY-MM-DD format
+          const filename = `${dateStr}_${msg.from}.txt`;
+          logToFile(filename, `User message: ${messageRecieved}`);
+
           const openAIResponse = await getOpenAIResponse(messageRecieved);
           console.log("Bot message: ", openAIResponse);
           console.log("number: ", msg.from);
           console.log("number: ", to);
+
+          // Log bot's message to the same file
+          logToFile(filename, `Bot message: ${openAIResponse}`);
 
           await bot.sendText(msg.from, openAIResponse);
         } else if (msg.type === "image") {
