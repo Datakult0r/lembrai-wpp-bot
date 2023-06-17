@@ -1,0 +1,8 @@
+{
+  "name": "wpp-bot",
+  "version": "1.0.0",
+  "description": "wpp-bot with gpt integration",
+  "main": "index.js",
+  "author": "Cezar Vasconcelos",
+  "license": "MIT"
+}
